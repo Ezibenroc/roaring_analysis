@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <roaring/roaring.h>
 
 void syntax(char *exec_name) {
@@ -30,9 +31,42 @@ int check_bool(int *error, char *string, char *var_name) {
     return string[0] - '0';
 }
 
+void fill_bitmap(roaring_bitmap_t *bm, long size, long universe, int copy_on_write, int run_containers) {
+    uint64_t cardinality = 0;
+
+    while(cardinality < size) {
+        for(int i = cardinality ; i < size ; i++) {
+            uint32_t value = rand()%universe;
+            roaring_bitmap_add(bm, value);
+        }
+        cardinality = roaring_bitmap_get_cardinality(bm);
+    }
+
+    bm->copy_on_write = copy_on_write;
+    if(run_containers) {
+        roaring_bitmap_run_optimize(bm);
+    }
+}
+
+double time_for_op(roaring_bitmap_t *bm1, roaring_bitmap_t *bm2) {
+    struct timespec stop, start;
+    if(clock_gettime(CLOCK_REALTIME, &start) != 0) {
+        perror("clock_gettime");
+        exit(1);
+    }
+    roaring_bitmap_t *result = roaring_bitmap_or(bm1, bm2);
+    if(clock_gettime(CLOCK_REALTIME, &stop) != 0) {
+        perror("clock_gettime");
+        exit(1);
+    }
+
+    double total_time = (double)(stop.tv_sec-start.tv_sec) + ((double)(stop.tv_nsec-start.tv_nsec))*1e-9;
+    roaring_bitmap_free(result);
+    return total_time;
+}
+
 int main(int argc, char *argv[]) {
-    roaring_bitmap_t *bm = roaring_bitmap_create();
-    roaring_bitmap_free(bm);
+    srand(time(NULL));
 
     long size1, universe1, size2, universe2;
     int copy_on_write, run_containers;
@@ -59,6 +93,22 @@ int main(int argc, char *argv[]) {
     printf("copy_on_write : %d\n", copy_on_write);
     printf("run_containers: %d\n", run_containers);
 */
+    roaring_bitmap_t *bm1 = roaring_bitmap_create();
+    roaring_bitmap_t *bm2 = roaring_bitmap_create();
+
+    fill_bitmap(bm1, size1, universe1, copy_on_write, run_containers);
+    fill_bitmap(bm2, size2, universe2, copy_on_write, run_containers);
+
+/*
+    roaring_bitmap_printf_describe(bm1);printf("\n");
+    roaring_bitmap_printf_describe(bm2);printf("\n");
+*/
+
+    double time = time_for_op(bm1, bm2);
+    printf("%.8lf\n", time);
+
+    roaring_bitmap_free(bm1);
+    roaring_bitmap_free(bm2);
 
     return 0;
 }
