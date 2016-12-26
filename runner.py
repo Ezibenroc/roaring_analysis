@@ -2,28 +2,42 @@
 
 import os
 import shutil
-from subprocess import Popen
+from subprocess import Popen, PIPE, DEVNULL
 import sys
+import random
+import argparse
+import csv
+import itertools
 
-libname = 'libroaring.so'
 ROARING_DIR = 'CRoaring'
+BUILD_DIR = 'build'
+NB_FACTORS = 9
 
 BLUE_STR = '\033[1m\033[94m'
+GREEN_STR = '\033[1m\033[92m'
 END_STR = '\033[0m'
 
-def print_msg(msg):
-    print('%s%s%s' % (BLUE_STR, msg, END_STR))
+
+def print_color(msg, color):
+    print('%s%s%s' % (color, msg, END_STR))
+
+def print_blue(msg):
+    print_color(msg, BLUE_STR)
+
+def print_green(msg):
+    print_color(msg, GREEN_STR)
 
 def error(msg):
     sys.stderr.write('ERROR: %s\n' % msg)
     sys.exit(1)
 
 def run_command(args):
-    print_msg(' '.join(args))
-    process = Popen(args)
+    print_blue('%s' % ' '.join(args))
+    process = Popen(args, stdout=PIPE, stderr=DEVNULL)
+    output = process.communicate()
     if process.wait() != 0:
         error('with command: %s' % ' '.join(args))
-    print('')
+    return output[0]
 
 def init_directory(dirname):
     shutil.rmtree(dirname, ignore_errors=True)
@@ -51,15 +65,76 @@ def compile_library_amalgamation(gcc_optimization, avx_enabled):
     run_command(['bash', os.path.join('..', ROARING_DIR, 'amalgamation.sh')])
     os.mkdir('roaring')
     shutil.copy('roaring.h', 'roaring')
-    run_command(['cc', *options, '-march=native', '-std=c11', '-shared', '-o', libname, '-fPIC', 'roaring.c'])
+    run_command(['cc', *options, '-march=native', '-std=c11', '-shared', '-o', 'libroaring.so', '-fPIC', 'roaring.c'])
 
-def compile(amalgamation, gcc_optimization, avx_enabled, dirname='build'):
-    init_directory(dirname)
+def compile_exec(amalgamation, gcc_optimization, avx_enabled):
+    init_directory(BUILD_DIR)
     if amalgamation:
         compile_library_amalgamation(gcc_optimization, avx_enabled)
     else:
         compile_library_make(gcc_optimization, avx_enabled)
     option = '-O3' if gcc_optimization else '-O0'
     shutil.copy(os.path.join('..', 'roaring_op.c'), '.')
-    run_command(['cc', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
+    run_command(['cc', option, '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
     os.chdir('..')
+
+def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
+    args = [os.path.join(BUILD_DIR, 'roaring_op'),
+            str(size1),
+            str(universe1),
+            str(size2),
+            str(universe2),
+            str(int(copy_on_write)),
+            str(int(run_containers))]
+    output = run_command(args)
+    return float(output)
+
+def get_sizes(large, dense):
+    base_size = 2**27 if large else 2**3
+    size = random.randint(base_size, base_size*2)
+    universe = 2*size if dense else 16*size
+    return size, universe
+
+def compile_and_run(csv_writer,
+        large1, dense1, large2, dense2,
+        copy_on_write, run_containers,
+        amalgamation, gcc_optimization, avx_enabled):
+    compile_exec(amalgamation, gcc_optimization, avx_enabled)
+    size1, universe1 = get_sizes(large1, dense1)
+    size2, universe2 = get_sizes(large2, dense2)
+    time = run(size1, universe1, size2, universe2, copy_on_write, run_containers)
+    csv_writer.writerow((time,
+        large1, dense1, large2, dense2,
+        copy_on_write, run_containers,
+        amalgamation, gcc_optimization, avx_enabled,
+        size1, universe1, size2, universe2))
+
+def generate_experiments(nb):
+    all_values = list(itertools.product ([False, True], repeat = NB_FACTORS))
+    experiments = []
+    while len(experiments) < nb:
+        experiments.extend(random.sample(all_values, min(len(all_values), nb-len(experiments))))
+    return experiments
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+            description='Experiment runner for CRoaring')
+    parser.add_argument('-n', '--nb_runs', type=int,
+            default=2**NB_FACTORS, help='Number of experiments to perform.')
+    parser.add_argument('csv_file', type=str,
+            default=None, help='CSV file, to write the raw results.')
+    args = parser.parse_args()
+
+    experiments = generate_experiments(args.nb_runs)
+
+    with open(args.csv_file, 'w') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(('time',
+            'large1', 'dense1', 'large2', 'dense2',
+            'copy_on_write', 'gcc_optimization', 'avx_enabled',
+            'size1', 'universe1', 'size2', 'universe2'))
+        for i, exp in enumerate(experiments):
+            print_green('\t\t\t\t\t%5d/%d' % (i, args.nb_runs))
+            compile_and_run(csv_writer, *exp)
+            print('')
