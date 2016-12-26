@@ -14,8 +14,8 @@ void syntax(char *exec_name) {
     exit(1);
 }
 
-long check_int(int *error, char *string, char *var_name) {
-    long var = atoi(string);
+unsigned long check_int(int *error, char *string, char *var_name) {
+    unsigned long var = strtoul(string, NULL, 10);
     if(var <= 0) {
         fprintf(stderr, "[ERROR] Expected a positive integer for %s, got %s\n", var_name, string);
         *error = 1;
@@ -31,7 +31,7 @@ int check_bool(int *error, char *string, char *var_name) {
     return string[0] - '0';
 }
 
-void fill_bitmap(roaring_bitmap_t *bm, long size, long universe, int copy_on_write, int run_containers) {
+void fill_bitmap(roaring_bitmap_t *bm, unsigned long size, unsigned long universe, int copy_on_write, int run_containers) {
     uint64_t cardinality = 0;
 
     while(cardinality < size) {
@@ -68,7 +68,7 @@ double time_for_op(roaring_bitmap_t *bm1, roaring_bitmap_t *bm2) {
 int main(int argc, char *argv[]) {
     srand(time(NULL));
 
-    long size1, universe1, size2, universe2;
+    unsigned long size1, universe1, size2, universe2;
     int copy_on_write, run_containers;
     int error = 0;
 
