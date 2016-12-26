@@ -3,6 +3,8 @@
 #include <time.h>
 #include <roaring/roaring.h>
 
+static const int seed = 27;
+
 void syntax(char *exec_name) {
     fprintf(stderr, "Syntax: %s <size1> <universe1> <size2> <universe2> <copy_on_write> <run_containers>\n", exec_name);
     fprintf(stderr, "\t<size1>          : integer, size of the first bitmap\n");
@@ -66,7 +68,7 @@ double time_for_op(roaring_bitmap_t *bm1, roaring_bitmap_t *bm2) {
 }
 
 int main(int argc, char *argv[]) {
-    srand(time(NULL));
+    srand(seed);
 
     unsigned long size1, universe1, size2, universe2;
     int copy_on_write, run_containers;

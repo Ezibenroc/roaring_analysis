@@ -33,7 +33,7 @@ def error(msg):
 
 def run_command(args):
     print_blue('%s' % ' '.join(args))
-    process = Popen(args, stdout=PIPE, stderr=DEVNULL)
+    process = Popen(args, stdout=PIPE)
     output = process.communicate()
     if process.wait() != 0:
         error('with command: %s' % ' '.join(args))
@@ -68,18 +68,16 @@ def compile_library_amalgamation(gcc_optimization, avx_enabled):
     run_command(['cc', *options, '-march=native', '-std=c11', '-shared', '-o', 'libroaring.so', '-fPIC', 'roaring.c'])
 
 def compile_exec(amalgamation, gcc_optimization, avx_enabled):
-    init_directory(BUILD_DIR)
     if amalgamation:
         compile_library_amalgamation(gcc_optimization, avx_enabled)
     else:
         compile_library_make(gcc_optimization, avx_enabled)
     option = '-O3' if gcc_optimization else '-O0'
     shutil.copy(os.path.join('..', 'roaring_op.c'), '.')
-    run_command(['cc', option, '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
-    os.chdir('..')
+    run_command(['cc', option, '-fsanitize=address', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
 
 def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
-    args = [os.path.join(BUILD_DIR, 'roaring_op'),
+    args = ['./roaring_op',
             str(size1),
             str(universe1),
             str(size2),
@@ -90,7 +88,7 @@ def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
     return float(output)
 
 def get_sizes(large, dense):
-    base_size = 2**27 if large else 2**3
+    base_size = 2**20 if large else 2**3
     size = random.randint(base_size, base_size*2)
     universe = 2*size if dense else 16*size
     return size, universe
@@ -99,6 +97,7 @@ def compile_and_run(csv_writer,
         large1, dense1, large2, dense2,
         copy_on_write, run_containers,
         amalgamation, gcc_optimization, avx_enabled):
+    init_directory(BUILD_DIR)
     compile_exec(amalgamation, gcc_optimization, avx_enabled)
     size1, universe1 = get_sizes(large1, dense1)
     size2, universe2 = get_sizes(large2, dense2)
@@ -108,6 +107,7 @@ def compile_and_run(csv_writer,
         copy_on_write, run_containers,
         amalgamation, gcc_optimization, avx_enabled,
         size1, universe1, size2, universe2))
+    os.chdir('..')
 
 def generate_experiments(nb):
     all_values = list(itertools.product ([False, True], repeat = NB_FACTORS))
@@ -132,7 +132,8 @@ if __name__ == '__main__':
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(('time',
             'large1', 'dense1', 'large2', 'dense2',
-            'copy_on_write', 'gcc_optimization', 'avx_enabled',
+            'copy_on_write', 'run_containers',
+            'amalgamation', 'gcc_optimization', 'avx_enabled',
             'size1', 'universe1', 'size2', 'universe2'))
         for i, exp in enumerate(experiments):
             print_green('\t\t\t\t\t%5d/%d' % (i, args.nb_runs))
