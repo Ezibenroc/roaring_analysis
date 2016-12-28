@@ -68,7 +68,7 @@ double time_for_op(roaring_bitmap_t *bm1, roaring_bitmap_t *bm2) {
 }
 
 int main(int argc, char *argv[]) {
-    srand(seed);
+    srand(time(NULL));
 
     unsigned long size1, universe1, size2, universe2;
     int copy_on_write, run_containers;

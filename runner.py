@@ -18,6 +18,10 @@ GREEN_STR = '\033[1m\033[92m'
 END_STR = '\033[0m'
 
 
+
+class CommandError(Exception):
+    pass
+
 def print_color(msg, color):
     print('%s%s%s' % (color, msg, END_STR))
 
@@ -31,12 +35,15 @@ def error(msg):
     sys.stderr.write('ERROR: %s\n' % msg)
     sys.exit(1)
 
-def run_command(args):
+def run_command(args, exit_on_error=True):
     print_blue('%s' % ' '.join(args))
     process = Popen(args, stdout=PIPE)
     output = process.communicate()
     if process.wait() != 0:
-        error('with command: %s' % ' '.join(args))
+        if exit_on_error:
+            error('with command: %s' % ' '.join(args))
+        else:
+            raise CommandError()
     return output[0]
 
 def init_directory(dirname):
@@ -84,13 +91,13 @@ def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
             str(universe2),
             str(int(copy_on_write)),
             str(int(run_containers))]
-    output = run_command(args)
+    output = run_command(args, exit_on_error=False)
     return float(output)
 
 def get_sizes(large, dense):
-    base_size = 2**20 if large else 2**3
-    size = random.randint(base_size, base_size*2)
-    universe = 2*size if dense else 16*size
+    base_size = 2**20 if large else 2**4
+    size = random.randint(base_size, base_size*4//3)
+    universe = 3*size//2 if dense else (2**6)*size
     return size, universe
 
 def compile_and_run(csv_writer,
@@ -99,9 +106,14 @@ def compile_and_run(csv_writer,
         amalgamation, gcc_optimization, avx_enabled):
     init_directory(BUILD_DIR)
     compile_exec(amalgamation, gcc_optimization, avx_enabled)
-    size1, universe1 = get_sizes(large1, dense1)
-    size2, universe2 = get_sizes(large2, dense2)
-    time = run(size1, universe1, size2, universe2, copy_on_write, run_containers)
+    while True:
+        try:
+            size1, universe1 = get_sizes(large1, dense1)
+            size2, universe2 = get_sizes(large2, dense2)
+            time = run(size1, universe1, size2, universe2, copy_on_write, run_containers)
+            break
+        except CommandError:
+            continue
     csv_writer.writerow((time,
         large1, dense1, large2, dense2,
         copy_on_write, run_containers,
