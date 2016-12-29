@@ -54,7 +54,7 @@ def init_directory(dirname):
 def compile_library_make(gcc_optimization, avx_enabled):
     options = []
     if not gcc_optimization:
-        options.extend(['-DCMAKE_BUILD_TYPE=Debug', '-DSANITIZE=ON'])
+        options.extend(['-DCMAKE_BUILD_TYPE=Debug'])
     if not avx_enabled:
         options.extend(['-DDISABLE_AVX=ON'])
     run_command(['cmake', *options, os.path.join('..', ROARING_DIR)])
@@ -83,7 +83,7 @@ def compile_exec(amalgamation, gcc_optimization, avx_enabled):
     if gcc_optimization:
         options.extend(['-O3'])
     else:
-        options.extend(['-O0', '-fsanitize=address'])
+        options.extend(['-O0'])
     shutil.copy(os.path.join('..', 'roaring_op.c'), '.')
     run_command(['cc', *options, '-std=c11', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
 
