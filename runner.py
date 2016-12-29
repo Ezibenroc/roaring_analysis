@@ -79,9 +79,13 @@ def compile_exec(amalgamation, gcc_optimization, avx_enabled):
         compile_library_amalgamation(gcc_optimization, avx_enabled)
     else:
         compile_library_make(gcc_optimization, avx_enabled)
-    option = '-O3' if gcc_optimization else '-O0'
+    options = []
+    if gcc_optimization:
+        options.extend(['-O3'])
+    else:
+        options.extend(['-O0', '-fsanitize=address'])
     shutil.copy(os.path.join('..', 'roaring_op.c'), '.')
-    run_command(['cc', option, '-fsanitize=address', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
+    run_command(['cc', *options, '-std=c11', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
 
 def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
     args = ['./roaring_op',
@@ -91,13 +95,14 @@ def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
             str(universe2),
             str(int(copy_on_write)),
             str(int(run_containers))]
-    output = run_command(args, exit_on_error=False)
+    output = run_command(args, exit_on_error=True)
     return float(output)
 
 def get_sizes(large, dense):
-    base_size = 2**20 if large else 2**4
-    size = random.randint(base_size, base_size*4//3)
-    universe = 3*size//2 if dense else (2**6)*size
+    base_size = 2**20 if large else 2**7
+    size = random.randint(base_size-10, base_size+10)
+    base_universe = 3*size//2 if dense else (2**6)*size
+    universe = random.randint(base_universe, base_universe+10)
     return size, universe
 
 def compile_and_run(csv_writer,
