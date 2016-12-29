@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 #include <roaring/roaring.h>
 
 static const int seed = 27;
@@ -50,25 +51,25 @@ void fill_bitmap(roaring_bitmap_t *bm, unsigned long size, unsigned long univers
     }
 }
 
-double time_for_op(roaring_bitmap_t *bm1, roaring_bitmap_t *bm2) {
-    struct timespec stop, start;
-    if(clock_gettime(CLOCK_REALTIME, &start) != 0) {
-        perror("clock_gettime");
-        exit(1);
-    }
-    roaring_bitmap_t *result = roaring_bitmap_or(bm1, bm2);
-    if(clock_gettime(CLOCK_REALTIME, &stop) != 0) {
-        perror("clock_gettime");
-        exit(1);
-    }
+double timeval_to_second(struct timeval time) {
+    return (double)(time.tv_sec) + (double)(time.tv_usec)*1e-6;
+}
 
-    double total_time = (double)(stop.tv_sec-start.tv_sec) + ((double)(stop.tv_nsec-start.tv_nsec))*1e-9;
+double time_for_op(roaring_bitmap_t *bm1, roaring_bitmap_t *bm2) {
+    struct timeval before = {};
+    struct timeval after = {};
+
+    gettimeofday(&before, NULL);
+    roaring_bitmap_t *result = roaring_bitmap_or(bm1, bm2);
+    gettimeofday(&after, NULL);
+
     roaring_bitmap_free(result);
-    return total_time;
+
+    return timeval_to_second(after)-timeval_to_second(before);
 }
 
 int main(int argc, char *argv[]) {
-    srand(time(NULL));
+    srand(seed);
 
     unsigned long size1, universe1, size2, universe2;
     int copy_on_write, run_containers;
