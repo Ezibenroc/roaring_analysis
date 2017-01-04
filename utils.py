@@ -78,6 +78,10 @@ def compile_exec(amalgamation, gcc_optimization, avx_enabled):
     run_command(['cc', *options, '-std=c11', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
 
 def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
+    assert size1 in range(0, 2**32)
+    assert universe1 in range(0, 2**32)
+    assert size2 in range(0, 2**32)
+    assert universe2 in range(0, 2**32)
     args = ['./roaring_op',
             str(size1),
             str(universe1),
