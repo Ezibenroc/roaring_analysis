@@ -34,21 +34,37 @@ int check_bool(int *error, char *string, char *var_name) {
     return string[0] - '0';
 }
 
-void fill_bitmap(roaring_bitmap_t *bm, unsigned long size, unsigned long universe, int copy_on_write, int run_containers) {
-    uint64_t cardinality = 0;
+roaring_bitmap_t *init_bitmap(unsigned long size, unsigned long universe, int copy_on_write, int run_containers) {
+    roaring_bitmap_t *bm;
 
-    while(cardinality < size) {
-        for(int i = cardinality ; i < size ; i++) {
-            uint32_t value = rand()%universe;
-            roaring_bitmap_add(bm, value);
+    if(size*2 < universe) { // we create an empty bitmap and then add values
+        bm = roaring_bitmap_create();
+        uint64_t cardinality = 0;
+        while(cardinality < size) {
+            for(int i = cardinality ; i < size ; i++) {
+                uint32_t value = rand()%universe;
+                roaring_bitmap_add(bm, value);
+            }
+            cardinality = roaring_bitmap_get_cardinality(bm);
         }
-        cardinality = roaring_bitmap_get_cardinality(bm);
     }
-
+    else { // we create a full bitmap and then remove values
+        bm = roaring_bitmap_from_range(0, universe, 1);
+        uint64_t cardinality = universe;
+        while(cardinality > size) {
+            for(int i = size ; i < cardinality ; i++) {
+                uint32_t value = rand()%universe;
+                roaring_bitmap_remove(bm, value);
+            }
+            cardinality = roaring_bitmap_get_cardinality(bm);
+        }
+    }
+    assert(roaring_bitmap_get_cardinality(bm) == size);
     bm->copy_on_write = copy_on_write;
     if(run_containers) {
         roaring_bitmap_run_optimize(bm);
     }
+    return bm;
 }
 
 double timeval_to_second(struct timeval time) {
@@ -96,15 +112,13 @@ int main(int argc, char *argv[]) {
     printf("copy_on_write : %d\n", copy_on_write);
     printf("run_containers: %d\n", run_containers);
 */
-    roaring_bitmap_t *bm1 = roaring_bitmap_create();
-    roaring_bitmap_t *bm2 = roaring_bitmap_create();
 
-    fill_bitmap(bm1, size1, universe1, copy_on_write, run_containers);
-    fill_bitmap(bm2, size2, universe2, copy_on_write, run_containers);
+    roaring_bitmap_t *bm1 = init_bitmap(size1, universe1, copy_on_write, run_containers);
+    roaring_bitmap_t *bm2 = init_bitmap(size2, universe2, copy_on_write, run_containers);
 
 /*
-    roaring_bitmap_printf_describe(bm1);printf("\n");
-    roaring_bitmap_printf_describe(bm2);printf("\n");
+    roaring_bitmap_printf(bm1);printf("\n");
+    roaring_bitmap_printf(bm2);printf("\n");
 */
 
     double time = time_for_op(bm1, bm2);
