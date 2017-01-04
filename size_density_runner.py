@@ -49,8 +49,8 @@ def parse_number(string, number_cls):
 def check_params(size, density):
     if size[1] * density[1] >= 2**32:
         error('This size/density combination will yield to non 32 bits integers, got size=%s and density=%s.' % (size, density))
-    if density[0] < 1:
-        error('Cannot use a density lower than 1, got density=%s.' % (density,))
+    if density[1] > 1 or density[0] <= 0:
+        error('Density must be in ]0, 1], got density=%s.' % (density,))
 
 def randfloat(density):
     return random.random()*(density[1]-density[0])+density[0]
@@ -60,8 +60,8 @@ def run_exp(csv_writer, size1, density1, size2, density2):
     d1 = randfloat(density1)
     s2 = random.randrange(size2[0], size2[1]+1)
     d2 = randfloat(density2)
-    u1 = int(s1*d1)
-    u2 = int(s2*d2)
+    u1 = int(s1/d1)
+    u2 = int(s2/d2)
     time = run(size1=s1, universe1=u1, size2=s2, universe2=u2, copy_on_write=COPY_ON_WRITE, run_containers=RUN_CONTAINERS)
     csv_writer.writerow((time,
         s1, u1, s2, u2))
@@ -76,9 +76,9 @@ if __name__ == '__main__':
     parser.add_argument('-s2', '--size2', type=str,
             default='1024', help='Size(s) of the second roaring bitmap.')
     parser.add_argument('-d1', '--density1', type=str,
-            default='2', help='Density of the first roaring bitmap.')
+            default='0.5', help='Density of the first roaring bitmap.')
     parser.add_argument('-d2', '--density2', type=str,
-            default='2', help='Density of the second roaring bitmap.')
+            default='0.5', help='Density of the second roaring bitmap.')
     parser.add_argument('csv_file', type=str,
             default=None, help='CSV file, to write the raw results.')
     args = parser.parse_args()
