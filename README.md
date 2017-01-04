@@ -24,7 +24,7 @@ git clone --recursive https://github.com/Ezibenroc/roaring_analysis.git
 
 Generate the results for the preliminary analysis, with 1024 experiments, output the results in results.csv (about one hour with the described laptop):
 ```bash
-./runner.py -n 1024 results.csv
+./preliminary_runner.py -n 1024 results.csv
 ```
 
 ## [Preliminary Analysis](preliminary_analysis.ipynb)
