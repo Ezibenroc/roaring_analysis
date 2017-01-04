@@ -12,6 +12,7 @@ NB_FACTORS = 9
 
 BLUE_STR = '\033[1m\033[94m'
 GREEN_STR = '\033[1m\033[92m'
+RED_STR = '\033[1m\033[91m'
 END_STR = '\033[0m'
 
 def print_color(msg, color):
@@ -24,7 +25,7 @@ def print_green(msg):
     print_color(msg, GREEN_STR)
 
 def error(msg):
-    sys.stderr.write('ERROR: %s\n' % msg)
+    sys.stderr.write('%sERROR: %s%s\n' % (RED_STR, msg, END_STR))
     sys.exit(1)
 
 def run_command(args):
@@ -86,5 +87,3 @@ def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
             str(int(run_containers))]
     output = run_command(args)
     return float(output)
-
-
