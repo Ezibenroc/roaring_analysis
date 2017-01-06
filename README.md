@@ -30,3 +30,9 @@ Generate the results for the preliminary analysis, with 1024 experiments, output
 ## [Preliminary Analysis](preliminary_analysis.ipynb)
 
 This is our first analysis. The aim is to find which factors have a significative impact on the performances.
+
+## [Size and density analysis](size_density_analysis.ipynb)
+
+We have identified the different optimizations that have an impact on performances.
+
+We will now analyze the performances of roaring bitmap unions for various sizes and densities.
