@@ -4,12 +4,6 @@ import argparse
 import csv
 import random
 
-AVX_ENABLED      = True
-GCC_OPTIMIZATION = True
-COPY_ON_WRITE    = True
-RUN_CONTAINERS   = True
-AMALGAMATION     = True
-
 def compile_and_run(csv_writer,
         large1, dense1, large2, dense2,
         copy_on_write, run_containers,
@@ -55,54 +49,71 @@ def check_params(size, density):
 def randfloat(density):
     return random.random()*(density[1]-density[0])+density[0]
 
-def run_exp(csv_writer, size1, density1, size2, density2):
-    s1 = random.randrange(size1[0], size1[1]+1)
-    d1 = randfloat(density1)
-    s2 = random.randrange(size2[0], size2[1]+1)
-    d2 = randfloat(density2)
+def run_exp(csv_writer, args):
+    s1 = random.randrange(args.size1[0], args.size1[1]+1)
+    d1 = randfloat(args.density1)
+    s2 = random.randrange(args.size2[0], args.size2[1]+1)
+    d2 = randfloat(args.density2)
     u1 = int(s1/d1)
     u2 = int(s2/d2)
-    time = run(size1=s1, universe1=u1, size2=s2, universe2=u2, copy_on_write=COPY_ON_WRITE, run_containers=RUN_CONTAINERS)
+    time = run(size1=s1, universe1=u1, size2=s2, universe2=u2, copy_on_write=args.cow, run_containers=args.run)
     csv_writer.writerow((time,
-        s1, u1, s2, u2))
+        s1, d1, u1, s2, d2, u2))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
             description='Experiment runner for CRoaring')
     parser.add_argument('-n', '--nb_runs', type=int,
             default=1000, help='Number of experiments to perform.')
-    parser.add_argument('-s1', '--size1', type=str,
-            default='1024', help='Size(s) of the first roaring bitmap.')
-    parser.add_argument('-s2', '--size2', type=str,
-            default='1024', help='Size(s) of the second roaring bitmap.')
-    parser.add_argument('-d1', '--density1', type=str,
-            default='0.5', help='Density of the first roaring bitmap.')
-    parser.add_argument('-d2', '--density2', type=str,
-            default='0.5', help='Density of the second roaring bitmap.')
+    required_named = parser.add_argument_group('required named arguments')
+    required_named.add_argument('--size1', type = lambda s: parse_range(s, int),
+            required=True, help='Size(s) of the first roaring bitmap.')
+    required_named.add_argument('--size2', type = lambda s: parse_range(s, int),
+            required=True, help='Size(s) of the second roaring bitmap.')
+    required_named.add_argument('--density1', type = lambda s: parse_range(s, float),
+            required=True, help='Density of the first roaring bitmap.')
+    required_named.add_argument('--density2', type = lambda s: parse_range(s, float),
+            required=True, help='Density of the second roaring bitmap.')
+    parser.add_argument('--gcc', dest='gcc', action='store_true', help='Enable GCC optimization.')
+    parser.add_argument('--no-gcc', dest='gcc', action='store_false', help='Disable GCC optimization.')
+    parser.set_defaults(gcc=True)
+    parser.add_argument('--avx', dest='avx', action='store_true', help='Enable AVX optimization.')
+    parser.add_argument('--no-avx', dest='avx', action='store_false', help='Disable AVX optimization.')
+    parser.set_defaults(avx=True)
+    parser.add_argument('--amalg', dest='amalg', action='store_true', help='Enable amalgamation optimization.')
+    parser.add_argument('--no-amalg', dest='amalg', action='store_false', help='Disable amalgamation optimization.')
+    parser.set_defaults(amalg=True)
+    parser.add_argument('--cow', dest='cow', action='store_true', help='Enable copy on write optimization.')
+    parser.add_argument('--no-cow', dest='cow', action='store_false', help='Disable copy on write optimization.')
+    parser.set_defaults(cow=True)
+    parser.add_argument('--run', dest='run', action='store_true', help='Enable run containers optimization.')
+    parser.add_argument('--no-run', dest='run', action='store_false', help='Disable run containers optimization.')
+    parser.set_defaults(run=True)
     parser.add_argument('csv_file', type=str,
             default=None, help='CSV file, to write the raw results.')
     args = parser.parse_args()
-
-    size1 = parse_range(args.size1, int)
-    size2 = parse_range(args.size2, int)
-    density1 = parse_range(args.density1, float)
-    density2 = parse_range(args.density2, float)
-    check_params(size1, density1)
-    check_params(size2, density2)
+    check_params(args.size1, args.density1)
+    check_params(args.size2, args.density2)
     print_blue('Parameters:')
-    print_blue('\tsize1    : %s' % (size1,))
-    print_blue('\tsize2    : %s' % (size2,))
-    print_blue('\tdensity1 : %s' % (density1,))
-    print_blue('\tdensity2 : %s\n' % (density2,))
+    print_blue('\tCSV file                    : %s' % (args.csv_file,))
+    print_blue('\tsize1                       : %s' % (args.size1,))
+    print_blue('\tsize2                       : %s' % (args.size2,))
+    print_blue('\tdensity1                    : %s' % (args.density1,))
+    print_blue('\tdensity2                    : %s' % (args.density2,))
+    print_blue('\tGCC optimization            : %s' % (args.gcc,))
+    print_blue('\tAVX optimization            : %s' % (args.avx,))
+    print_blue('\tAmalgamation optimization   : %s' % (args.amalg,))
+    print_blue('\tRun containers optimization : %s' % (args.run,))
+    print_blue('\tCopy on write optimization  : %s' % (args.cow,))
 
     with open(args.csv_file, 'w') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(('time',
-            'size1', 'universe1', 'size2', 'universe2'))
+            'size1', 'density1', 'universe1', 'size2', 'density2',  'universe2'))
         init_directory(BUILD_DIR)
-        compile_exec(amalgamation=AMALGAMATION, gcc_optimization=GCC_OPTIMIZATION,
-                    avx_enabled=AVX_ENABLED)
+        compile_exec(amalgamation=args.amalg, gcc_optimization=args.gcc,
+                    avx_enabled=args.avx)
         for i in range(args.nb_runs):
             print_green('\t\t\t\t\t%5d/%d' % (i, args.nb_runs))
-            run_exp(csv_writer, size1, density1, size2, density2)
+            run_exp(csv_writer, args)
             print('')
