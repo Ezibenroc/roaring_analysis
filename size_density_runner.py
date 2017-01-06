@@ -45,6 +45,8 @@ def check_params(size, density):
         error('This size/density combination will yield to non 32 bits integers, got size=%s and density=%s.' % (size, density))
     if density[1] > 1 or density[0] <= 0:
         error('Density must be in ]0, 1], got density=%s.' % (density,))
+    if size[0] <= 0:
+        error('Size must be positive, got size=%s.' % (size,))
 
 def randfloat(density):
     return random.random()*(density[1]-density[0])+density[0]
