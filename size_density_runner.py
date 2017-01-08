@@ -4,22 +4,6 @@ import argparse
 import csv
 import random
 
-def compile_and_run(csv_writer,
-        large1, dense1, large2, dense2,
-        copy_on_write, run_containers,
-        amalgamation, gcc_optimization, avx_enabled):
-    init_directory(BUILD_DIR)
-    compile_exec(amalgamation, gcc_optimization, avx_enabled)
-    size1, universe1 = get_sizes(large1, dense1)
-    size2, universe2 = get_sizes(large2, dense2)
-    time = run(size1, universe1, size2, universe2, copy_on_write, run_containers)
-    csv_writer.writerow((time,
-        large1, dense1, large2, dense2,
-        copy_on_write, run_containers,
-        amalgamation, gcc_optimization, avx_enabled,
-        size1, universe1, size2, universe2))
-    os.chdir('..')
-
 class DiscreteSampler:
     def __init__(self, values):
         assert len(values) > 0
