@@ -29,7 +29,8 @@ class DiscreteSampler:
         return '%s(%s)' % (self.__class__.__name__, self.values)
 
     def sample(self):
-        return random.choice(self.values)
+        self.last_sampled = random.choice(self.values)
+        return self.last_sampled
 
     def min(self):
         if type(self.values) == range: # min function iterate on all the values...
@@ -53,13 +54,30 @@ class ContinuousSampler:
         return '%s(%s, %s)' % (self.__class__.__name__, self.start, self.stop)
 
     def sample(self):
-        return random.random()*(self.stop-self.start)+self.start
+        self.last_sampled = random.random()*(self.stop-self.start)+self.start
+        return self.last_sampled
 
     def min(self):
         return self.start
 
     def max(self):
         return self.stop
+
+class CopySampler:
+    def __init__(self, original):
+        self.original = original
+
+    def __str__(self):
+        return '%s(%s)' % (self.__class__.__name__, self.original)
+
+    def sample(self):
+        return self.original.last_sampled
+
+    def min(self):
+        return self.original.min()
+
+    def max(self):
+        return self.original.max()
 
 LIST_SEP  = ','
 RANGE_SEP = ':'
@@ -127,13 +145,13 @@ if __name__ == '__main__':
             default=1000, help='Number of experiments to perform.')
     required_named = parser.add_argument_group('required named arguments')
     required_named.add_argument('--size1', type = lambda s: parse_sample(s, int),
-            required=True, help='Size(s) of the first roaring bitmap.')
-    required_named.add_argument('--size2', type = lambda s: parse_sample(s, int),
-            required=True, help='Size(s) of the second roaring bitmap.')
+            required=True, help='Sizes of the first roaring bitmap.')
+    parser.add_argument('--size2', type = lambda s: parse_sample(s, int),
+            help='Sizes of the second roaring bitmap. If not specified, the same random values than for the first roaring bitmap will be used.')
     required_named.add_argument('--density1', type = lambda s: parse_sample(s, float),
-            required=True, help='Density of the first roaring bitmap.')
-    required_named.add_argument('--density2', type = lambda s: parse_sample(s, float),
-            required=True, help='Density of the second roaring bitmap.')
+            required=True, help='Densities of the first roaring bitmap.')
+    parser.add_argument('--density2', type = lambda s: parse_sample(s, float),
+            help='Densities of the second roaring bitmap. If not specified, the same random values than for the first roaring bitmap will be used.')
     parser.add_argument('--gcc', dest='gcc', action='store_true', help='Enable GCC optimization.')
     parser.add_argument('--no-gcc', dest='gcc', action='store_false', help='Disable GCC optimization.')
     parser.set_defaults(gcc=True)
@@ -152,6 +170,10 @@ if __name__ == '__main__':
     parser.add_argument('csv_file', type=str,
             default=None, help='CSV file, to write the raw results.')
     args = parser.parse_args()
+    if args.size2 is None:
+        args.size2 = CopySampler(args.size1)
+    if args.density2 is None:
+        args.density2 = CopySampler(args.density1)
     check_params(args.size1, args.density1)
     check_params(args.size2, args.density2)
     print_blue('Parameters:')
