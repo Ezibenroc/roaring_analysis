@@ -20,8 +20,69 @@ def compile_and_run(csv_writer,
         size1, universe1, size2, universe2))
     os.chdir('..')
 
+class DiscreteSampler:
+    def __init__(self, values):
+        assert len(values) > 0
+        self.values = values
+
+    def __str__(self):
+        return '%s(%s)' % (self.__class__.__name__, self.values)
+
+    def sample(self):
+        return random.choice(self.values)
+
+    def min(self):
+        if type(self.values) == range: # min function iterate on all the values...
+            return self.values.start
+        else:
+            return min(self.values)
+
+    def max(self):
+        if type(self.values) == range: # min function iterate on all the values...
+            return self.values.stop-1
+        else:
+            return max(self.values)
+
+class ContinuousSampler:
+    def __init__(self, start, stop):
+        assert start <= stop
+        self.start = start
+        self.stop = stop
+
+    def __str__(self):
+        return '%s(%s, %s)' % (self.__class__.__name__, self.start, self.stop)
+
+    def sample(self):
+        return random.random()*(self.stop-self.start)+self.start
+
+    def min(self):
+        return self.start
+
+    def max(self):
+        return self.stop
+
+LIST_SEP  = ','
+RANGE_SEP = ':'
+
+def parse_sample(string, number_cls):
+    if RANGE_SEP in string:
+        if LIST_SEP in string:
+            error('Cannot mix ranges and lists. Got %s.' % string)
+        start, stop = parse_range(string, number_cls)
+        if number_cls is int:
+            return DiscreteSampler(range(start, stop+1))
+        else:
+            assert number_cls is float
+            return ContinuousSampler(start, stop)
+    else:
+        return DiscreteSampler(parse_list(string, number_cls))
+
+def parse_list(string, number_cls):
+    splitted = string.split(LIST_SEP)
+    return [parse_number(x, number_cls) for x in splitted]
+
 def parse_range(string, number_cls):
-    splitted = string.split(':')
+    splitted = string.split(RANGE_SEP)
     if len(splitted) > 2:
         error('Incorrect value for range, got %s.' % string)
     elif len(splitted) == 1:
@@ -41,21 +102,18 @@ def parse_number(string, number_cls):
     return result
 
 def check_params(size, density):
-    if size[1]/density[0] >= 2**32:
-        error('This size/density combination will yield to non 32 bits integers, got size=%s and density=%s.' % (size, density))
-    if density[1] > 1 or density[0] <= 0:
+    if density.max() > 1 or density.min() <= 0:
         error('Density must be in ]0, 1], got density=%s.' % (density,))
-    if size[0] <= 0:
+    if size.min() <= 0:
         error('Size must be positive, got size=%s.' % (size,))
-
-def randfloat(density):
-    return random.random()*(density[1]-density[0])+density[0]
+    if size.max()/density.min() >= 2**32:
+        error('This size/density combination will yield to non 32 bits integers, got size=%s and density=%s.' % (size, density))
 
 def run_exp(csv_writer, args):
-    s1 = random.randrange(args.size1[0], args.size1[1]+1)
-    d1 = randfloat(args.density1)
-    s2 = random.randrange(args.size2[0], args.size2[1]+1)
-    d2 = randfloat(args.density2)
+    s1 = args.size1.sample()
+    d1 = args.density1.sample()
+    s2 = args.size2.sample()
+    d2 = args.density2.sample()
     u1 = int(s1/d1)
     u2 = int(s2/d2)
     time = run(size1=s1, universe1=u1, size2=s2, universe2=u2, copy_on_write=args.cow, run_containers=args.run)
@@ -68,13 +126,13 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--nb_runs', type=int,
             default=1000, help='Number of experiments to perform.')
     required_named = parser.add_argument_group('required named arguments')
-    required_named.add_argument('--size1', type = lambda s: parse_range(s, int),
+    required_named.add_argument('--size1', type = lambda s: parse_sample(s, int),
             required=True, help='Size(s) of the first roaring bitmap.')
-    required_named.add_argument('--size2', type = lambda s: parse_range(s, int),
+    required_named.add_argument('--size2', type = lambda s: parse_sample(s, int),
             required=True, help='Size(s) of the second roaring bitmap.')
-    required_named.add_argument('--density1', type = lambda s: parse_range(s, float),
+    required_named.add_argument('--density1', type = lambda s: parse_sample(s, float),
             required=True, help='Density of the first roaring bitmap.')
-    required_named.add_argument('--density2', type = lambda s: parse_range(s, float),
+    required_named.add_argument('--density2', type = lambda s: parse_sample(s, float),
             required=True, help='Density of the second roaring bitmap.')
     parser.add_argument('--gcc', dest='gcc', action='store_true', help='Enable GCC optimization.')
     parser.add_argument('--no-gcc', dest='gcc', action='store_false', help='Disable GCC optimization.')
