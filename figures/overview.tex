@@ -1,0 +1,49 @@
+\documentclass[a4paper,10pt,landscape]{article}
+
+\usepackage{comment}
+\usepackage{tikz}
+\usetikzlibrary{arrows, shapes.arrows, chains, positioning, automata, graphs, fit, calc, decorations.pathreplacing}
+
+\thispagestyle{empty}
+
+\begin{document}
+
+\tikzstyle{box}=[draw, rectangle, node distance=0.5cm]
+\tikzstyle{cell}=[box, minimum width=1cm, minimum height = 1cm]
+\tikzstyle{container}=[box, minimum width=5cm, minimum height = 0.5cm]
+
+\centering
+
+\begin{tikzpicture}
+    \node[cell]                     (c0_k) at (0, 0)            {$k_0$};
+    \node[cell, anchor=north west]  (c1_k) at (c0_k.south west) {$k_1$};
+    \node[cell, anchor=north west]  (c2_k) at (c1_k.south west) {$k_2$};
+    \node[anchor=north]             (dots_k) at (c2_k.south)    {\vdots};
+    \node[cell, anchor=north]       (c3_k) at (dots_k.south)    {$k_n$};
+    
+    \node[cell, anchor=north west]  (c0_p) at (c0_k.north east) {$\bullet$};
+    \node[cell, anchor=north west]  (c1_p) at (c1_k.north east) {$\bullet$};
+    \node[cell, anchor=north west]  (c2_p) at (c2_k.north east) {$\bullet$};
+    \node[anchor=north]             (dots_p) at (c2_p.south) {\vdots};
+    \node[cell, anchor=north west]  (c3_p) at (c3_k.north east) {$\bullet$};
+
+    \node[container, anchor=center, xshift=5cm]  (c0_cont) at (c0_p.center) {container 0};
+    \node[container, anchor=center, xshift=5cm]  (c1_cont) at (c1_p.center) {container 1};
+    \node[container, anchor=center, xshift=5cm]  (c2_cont) at (c2_p.center) {container 2};
+    \node[container, anchor=center, xshift=5cm]  (c3_cont) at (c3_p.center) {container n};
+
+    \draw[-latex] (c0_p.center) -- (c0_cont);
+    \draw[-latex] (c1_p.center) -- (c1_cont);
+    \draw[-latex] (c2_p.center) -- (c2_cont);
+    \draw[-latex] (c3_p.center) -- (c3_cont);
+
+    \draw [decorate,decoration={brace,amplitude=5pt,raise=5pt}]
+        (c0_k.north west) -- (c0_k.north east) node [black,midway,yshift=0.8cm] 
+        {16 higher order bits};
+
+    \draw [decorate,decoration={brace,amplitude=5pt, raise=5pt},xshift=0pt,yshift=4pt]
+        (c0_cont.north west) -- (c0_cont.north east) node [black,midway,yshift=0.8cm] 
+        {Contains 16 lower order bits};
+\end{tikzpicture}
+
+\end{document}

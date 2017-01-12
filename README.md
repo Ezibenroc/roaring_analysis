@@ -8,7 +8,25 @@ This takes place in the Scientific Methodology and Performance Evaluation (SMPE)
 
 ## About roaring bitmaps
 
-To be completed.
+Roaring bitmaps are a hybrid data structure to represent sets of unsigned 32 bits integers. Their main purpose is to be more efficient, both in memory and in computation time, than classical set implementations like hash sets. They are also more versatile than bitsets, which should not be used when the elements are “too sparse”.
+
+A roaring bitmap is made of a sorted array of “containers”. An element of a roaring bitmap will be represented in one of these containers, depending on its 16 higher order bits. The container will therefore hold the 16 lower order bits of the integer (thus, containers can be viewed as sets of unsigned 16 bits integers). The following figure gives a quick overview.
+
+![overview of a roaring bitmap](figures/overview.png)
+
+Three types of containers are used:
+
+  - **Array containers:** a dynamic array, holding a sorted list of the elements,
+  - **Bitset containers:** a bitset of 2^16 bits,
+  - **Run containers:** a dynamic array, holding a sorted list of intervals.
+
+The type of the container is chosen depending on the number of elements it holds. We recall that there can be at most 2^16 such elements, since these are 16 bits integers.
+
+  - Array containers must hold less than 4096 values.
+  - Bitset containers must hold more than 4096 values.
+  - Run containers are preferred to the two previous containers when they would require more space than a run container.
+
+For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 
 ## Reproduce this work
 
@@ -29,7 +47,7 @@ Generate the results for the preliminary analysis, with 1024 experiments, output
 
 ## [Preliminary Analysis](preliminary_analysis.ipynb)
 
-This is our first analysis. The aim is to find which factors have a significative impact on the performances.
+This is our first analysis. The aim is to find which factors have a significant impact on the performances.
 
 ## [Size and density analysis](size_density_analysis.ipynb)
 
