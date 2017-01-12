@@ -1,7 +1,7 @@
-all: overview.png
+all: overview.png example.png
 
 %.pdf: %.tex Makefile
-	xelatex $<
+	xelatex -shell-escape -interaction batchmode $<
 	pdfcrop $@ $@
 
 %.png: %.pdf Makefile

@@ -1,0 +1,79 @@
+\documentclass[a4paper,10pt,landscape]{article}
+
+\usepackage{comment}
+\usepackage{tikz}
+\usetikzlibrary{arrows, shapes.arrows, chains, positioning, automata, graphs, fit, calc, decorations.pathreplacing}
+
+\thispagestyle{empty}
+
+\begin{document}
+
+\tikzstyle{box}=[draw, rectangle, node distance=0.5cm]
+\tikzstyle{cell}=[box, minimum width=1.5cm, minimum height = 1cm]
+\tikzstyle{container}=[box, minimum width=3cm, minimum height =5cm, node distance=1cm]
+
+\centering
+
+% Example, we store:
+%   - Multiples of 100 in [0, 2000]     (→ array)
+%   - Multiples of 2 in [2^16, 2*2^16[  (→ bitset)
+%   - All numbers in [5*2^16+10, 5*2^16+27] and in [5*2^16+1024, 5*2^16+2048] (→ run)
+
+\begin{tikzpicture}
+    \node[cell]                     (c0_k) at (0, 0)            {$k_0 = 0$};
+    \node[cell, anchor=north west]  (c1_k) at (c0_k.north east) {$k_1 = 1$};
+    \node[cell, anchor=north west]  (c2_k) at (c1_k.north east) {$k_2 = 5$};
+    
+    \node[cell, anchor=north]  (c0_p) at (c0_k.south) {$\bullet$};
+    \node[cell, anchor=north]  (c1_p) at (c1_k.south) {$\bullet$};
+    \node[cell, anchor=north]  (c2_p) at (c2_k.south) {$\bullet$};
+
+    \node[container, anchor=center, align=center, below=of c1_p]  (c1_cont) {
+        \begin{minipage}[t][4cm]{3cm}
+            \textbf{Bitset container}\\\vspace{5pt}
+            \begin{tabular}{|p{2cm}|}
+                \hline
+                1\\\hline
+                0\\\hline
+                1\\\hline
+                0\\\hline
+                1\\\hline
+                \vdots\\\hline
+                0\\\hline
+            \end{tabular}
+        \end{minipage}
+    };
+    \node[container, anchor=center, align=center, left=of c1_cont]  (c0_cont) {
+        \begin{minipage}[t][4cm]{3cm}
+            \center
+            \textbf{Array container}\\\vspace{5pt}
+            \begin{tabular}{|p{2cm}|}
+                \hline
+                0\\\hline
+                100\\\hline
+                200\\\hline
+                300\\\hline
+                400\\\hline
+                \vdots\\\hline
+                2000\\\hline
+            \end{tabular}
+        \end{minipage}
+    };
+    \node[container, anchor=center, align=center, right=of c1_cont]  (c2_cont) {
+        \begin{minipage}[t][4cm]{3cm}
+            \center
+            \textbf{Run container}\\\vspace{5pt}
+            \begin{tabular}{|p{2cm}|}
+                \hline
+                [10, 27]\\\hline
+                [1024, 2048]\\\hline
+            \end{tabular}
+        \end{minipage}
+    };
+
+    \draw[-latex] (c0_p.center) -- (c0_cont);
+    \draw[-latex] (c1_p.center) -- (c1_cont);
+    \draw[-latex] (c2_p.center) -- (c2_cont);
+\end{tikzpicture}
+
+\end{document}

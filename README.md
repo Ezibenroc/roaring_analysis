@@ -16,8 +16,8 @@ A roaring bitmap is made of a sorted array of “containers”. An element of a 
 
 Three types of containers are used:
 
-  - **Array containers:** a dynamic array, holding a sorted list of the elements,
-  - **Bitset containers:** a bitset of 2^16 bits,
+  - **Array containers:** a dynamic array, holding a sorted list of the elements.
+  - **Bitset containers:** a bitset of 2^16 bits.
   - **Run containers:** a dynamic array, holding a sorted list of intervals.
 
 The type of the container is chosen depending on the number of elements it holds. We recall that there can be at most 2^16 such elements, since these are 16 bits integers.
@@ -25,6 +25,13 @@ The type of the container is chosen depending on the number of elements it holds
   - Array containers must hold less than 4096 values.
   - Bitset containers must hold more than 4096 values.
   - Run containers are preferred to the two previous containers when they would require more space than a run container.
+
+The following figure gives an example of a roaring bitmap containing:
+ - All the multiples of 100 in `[0, 2000]`.
+ - All the multiples of 2 in `[2^16, 2*2^16[`.
+ - All the numbers in `[5*2^16+10, 5*2^16+27]` and all the numbers in `[5*2^16+1024, 5*2^16+2048]`.
+
+![example of roaring bitmap](figures/example.png)
 
 For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 
