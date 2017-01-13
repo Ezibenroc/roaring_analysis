@@ -37,6 +37,14 @@ For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 
 ## Reproduce this work
 
+Dependencies:
+  - R programming language.
+    * ggplot2 package
+    * FrF2 package
+  - Python programming language (version >= 3.5)
+  - Jupyther notbook
+  - R kernel for Jupyter
+
 Laptop used to get the results:
   - CPU: Intel Core i7-5600U
   - RAM: 16GB
@@ -47,10 +55,12 @@ Clone the repositories:
 git clone --recursive https://github.com/Ezibenroc/roaring_analysis.git
 ```
 
-Generate the results for the preliminary analysis, with 1024 experiments, output the results in results.csv (about one hour with the described laptop):
+To open the Jupyter notebooks:
 ```bash
-./preliminary_runner.py -n 1024 results.csv
+jupyter notebook # then click on the desired notebook
 ```
+
+Instructions to generate the result files are written in the two notebooks.
 
 ## [Preliminary Analysis](preliminary_analysis.ipynb)
 
