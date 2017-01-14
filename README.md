@@ -38,11 +38,11 @@ For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 ## Reproduce this work
 
 Dependencies:
-  - R programming language.
+  - R programming language
     * ggplot2 package
     * FrF2 package
   - Python programming language (version >= 3.5)
-  - Jupyther notbook
+  - Jupyter notebook
   - R kernel for Jupyter
 
 Laptop used to get the results:
