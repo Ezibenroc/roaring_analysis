@@ -35,6 +35,12 @@ The following figure gives an example of a roaring bitmap containing:
 
 For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 
+## About this work
+
+The root of this work is the C file [roaring_op.c](roaring_op.c). It can be compiled into an executable which takes as input several parameters (sizes, densities, optimizations), generates randomly two roaring bitmaps accordingly, computes their union and finally outputs the time spent to compute this union.
+
+The Python scripts [preliminary_runner.py](preliminary_runner.py) and [size_density_runner.py](size_density_runner.py) are used to automatize the experiments, with the Python file [utils.py](utils.py) containing some common functions. One experiment consists in compiling both the library and the executable in the desired way, running `roaring_op` with the desired parameters and saving the results in a CSV file.
+
 ## Reproduce this work
 
 Dependencies:
