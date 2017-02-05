@@ -4,7 +4,7 @@ import time
 import argparse
 import sys
 import csv
-from utils import print_green
+from utils import *
 from samplers import *
 
 def generate_dataset(dataset_size, dataset_universe_size):
@@ -33,6 +33,13 @@ def run_exp(csv_writer, args, classes, op):
         time = run(cls, op, values1, values2)
         csv_writer.writerow((class_name, time,
             s1, d1, u1, s2, d2, u2))
+
+def compile_all():
+    init_directory(BUILD_DIR)
+    compile_library_amalgamation(True, True)
+    os.chdir(os.path.join('..', 'CyRoaring'))
+    run_command(['make', '-j', '4'])
+    os.chdir('..')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -64,11 +71,14 @@ if __name__ == '__main__':
     print('\tdensity1                    : %s' % (args.density1,))
     print('\tdensity2                    : %s' % (args.density2,))
 
-    sys.path.append('PyRoaring') # assuming the script is ran from the root directory of the repository
-    from pyroaring import BitMap
-    classes = {'set': set, 'pyroaring': BitMap}
-    op = lambda x, y: x|y
+    compile_all()
 
+    sys.path.append('PyRoaring') # assuming the script is ran from the root directory of the repository
+    sys.path.append('CyRoaring') # assuming the script is ran from the root directory of the repository
+    from pyroaring import BitMap as PyRoaring
+    from roaringbitmap import RoaringBitmap as CyRoaring
+    classes = {'set': set, 'pyroaring': PyRoaring, 'cyroaring': CyRoaring}
+    op = lambda x, y: x|y
     with open(args.csv_file, 'w') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(('class', 'time',
