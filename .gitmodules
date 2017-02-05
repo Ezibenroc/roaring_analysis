@@ -4,3 +4,6 @@
 [submodule "PyRoaring"]
 	path = PyRoaring
 	url = https://github.com/Ezibenroc/PyRoaringBitMap.git
+[submodule "CyRoaring"]
+	path = CyRoaring
+	url = https://github.com/andreasvc/roaringbitmap.git
