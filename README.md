@@ -41,11 +41,11 @@ For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 
 The root of this work is the C file [roaring_op.c](roaring_op.c). It can be compiled into an executable which takes as input several parameters (sizes, densities, optimizations), generates randomly two roaring bitmaps accordingly, computes their union and finally outputs the time spent to compute this union.
 
-The Python scripts [preliminary_runner.py](scripts/preliminary_runner.py) and [size_density_runner.py](scripts/size_density_runner.py) are used to automatize the experiments, with the Python file [utils.py](scripts/utils.py) and [samplers.py](scripts/samplers.py) containing some common functions. One experiment consists in compiling both the library and the executable in the desired way, running `roaring_op` with the desired parameters and saving the results in a CSV file.
+The Python scripts [preliminary_runner.py](scripts/preliminary_runner.py) and [size_density_runner.py](scripts/size_density_runner.py) are used to automatize the experiments, with the Python files [utils.py](scripts/utils.py) and [samplers.py](scripts/samplers.py) containing some common functions. One experiment consists in compiling both the library and the executable in the desired way, running `roaring_op` with the desired parameters and saving the results in a CSV file.
 
 ## About this work - Python analysis
 
-Here, everything is done in the script [python_size_density_runner.py](scripts/python_size_density_runner.py), which also uses the files [utils.py](scripts/utils.py) and [samplers.py](scripts/samples.py).
+Here, everything is done in the script [python_size_density_runner.py](scripts/python_size_density_runner.py), which also uses the files [utils.py](scripts/utils.py) and [samplers.py](scripts/samplers.py).
 
 The idea is very similar to what we did for the C analysis, but simpler, since everything remains in Python.
 
