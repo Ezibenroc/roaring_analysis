@@ -56,8 +56,9 @@ Dependencies:
     * ggplot2 package
     * FrF2 package
   - Python programming language (version >= 3.5)
-  - Jupyter notebook
-  - R kernel for Jupyter
+  - Jupyter notebook (for the analysis)
+  - R kernel for Jupyter (for the analysis)
+  - Cython (only for the Python part, not needed for the C part)
 
 Laptop used to get the results:
   - CPU: Intel Core i7-5600U
