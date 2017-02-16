@@ -52,10 +52,10 @@ The idea is very similar to what we did for the C analysis, but simpler, since e
 ## Reproduce this work
 
 Dependencies:
-  - R programming language
+  - Python programming language (version >= 3.5)
+  - R programming language (for the analysis)
     * ggplot2 package
     * FrF2 package
-  - Python programming language (version >= 3.5)
   - Jupyter notebook (for the analysis)
   - R kernel for Jupyter (for the analysis)
   - Cython (only for the Python part, not needed for the C part)
