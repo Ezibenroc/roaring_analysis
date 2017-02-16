@@ -1,9 +1,11 @@
 # Roaring analysis
 
-This project is a performance analysis of the C implementation of **Roaring Bitmaps**. We will focus on one operation: the union between two roaring bitmaps.
+This project is a performance analysis of implementations of **Roaring Bitmaps**. We will focus on one operation: the union between two roaring bitmaps.
 This takes place in the Scientific Methodology and Performance Evaluation (SMPE) course of the Grenoble Alpes University.
 
   - C implementation: https://github.com/RoaringBitmap/CRoaring
+  - Cython implementation: https://github.com/andreasvc/roaringbitmap
+  - Python wrapper for the C implementation: https://github.com/Ezibenroc/PyRoaringBitMap
   - SMPE course: https://github.com/alegrand/SMPE
 
 ## About roaring bitmaps
@@ -35,7 +37,7 @@ The following figure gives an example of a roaring bitmap containing:
 
 For more details on roaring bitmaps, read http://arxiv.org/abs/1603.06549
 
-## About this work
+## About this work - C analysis
 
 The root of this work is the C file [roaring_op.c](roaring_op.c). It can be compiled into an executable which takes as input several parameters (sizes, densities, optimizations), generates randomly two roaring bitmaps accordingly, computes their union and finally outputs the time spent to compute this union.
 
@@ -68,12 +70,16 @@ jupyter notebook # then click on the desired notebook
 
 Instructions to generate the result files are written in the two notebooks.
 
-## [Preliminary Analysis](preliminary_analysis.ipynb)
+## [Preliminary C Analysis](preliminary_analysis.ipynb)
 
-This is our first analysis. The aim is to find which factors have a significant impact on the performances.
+This is our first analysis of the C implementation. The aim is to find which factors have a significant impact on the performances.
 
-## [Size and density analysis](size_density_analysis.ipynb)
+## [Size and density C analysis](size_density_analysis.ipynb)
 
 We have identified the different optimizations that have an impact on performances.
 
-We will now analyze the performances of roaring bitmap unions for various sizes and densities.
+We will now analyze the performances of the C implementation of roaring bitmap unions for various sizes and densities.
+
+## [Size and density Python analysis](python_analysis.ipynb)
+
+Here, we analyze the performances of the Cython and Python implementations of roaring bitmaps, as well as the built-in set.
