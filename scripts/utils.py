@@ -8,7 +8,6 @@ import random
 
 ROARING_DIR = 'CRoaring'
 BUILD_DIR = 'build'
-NB_FACTORS = 9
 
 BLUE_STR = '\033[1m\033[94m'
 GREEN_STR = '\033[1m\033[92m'
