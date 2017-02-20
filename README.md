@@ -60,10 +60,17 @@ Dependencies:
   - R kernel for Jupyter (for the analysis)
   - Cython (only for the Python part, not needed for the C part)
 
-Laptop used to get the results:
+Two machines were used to get the results.
+
+* Broadwell:
   - CPU: Intel Core i7-5600U
   - RAM: 16GB
   - OS:  Ubuntu 16.04 (Linux 4.4.0-57, gcc 5.4.0)
+
+* Skylake:
+  - CPU: Intel Core i7-6700
+  - RAM: 32GB
+  - OS: Ubuntu 16.04 (Linux 4.4.0-38, gcc 5.4.1)
 
 Clone the repositories:
 ```bash
