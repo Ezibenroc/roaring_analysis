@@ -57,7 +57,7 @@ def compile_library_amalgamation(gcc_optimization, avx_enabled):
     else:
         options.extend(['-O0'])
     if not avx_enabled:
-        options.extend(['-DDISABLE_AVX=ON'])
+        options.extend(['-DDISABLEAVX=ON'])
     run_command(['bash', os.path.join('..', ROARING_DIR, 'amalgamation.sh')])
     os.mkdir('roaring')
     shutil.copy('roaring.h', 'roaring')
