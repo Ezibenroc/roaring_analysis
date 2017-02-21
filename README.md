@@ -88,11 +88,15 @@ Instructions to generate the result files are written in the two notebooks.
 
 This is our first analysis of the C implementation. The aim is to find which factors have a significant impact on the performances.
 
+A previous version of this analysis can be found [here](old_preliminary_analysis.ipynb).
+
 ## [Size and density C analysis](size_density_analysis.ipynb)
 
 We have identified the different optimizations that have an impact on performances.
 
 We will now analyze the performances of the C implementation of roaring bitmap unions for various sizes and densities.
+
+A previous version of this analysis can be found [here](old_size_density_analysis.ipynb).
 
 ## [Size and density Python analysis](python_analysis.ipynb)
 
