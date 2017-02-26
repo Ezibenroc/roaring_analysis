@@ -46,7 +46,7 @@ def compile_library_make(gcc_optimization, avx_enabled):
         options.extend(['-DCMAKE_BUILD_TYPE=Debug'])
     if not avx_enabled:
         options.extend(['-DDISABLE_AVX=ON'])
-    run_command(['cmake', *options, os.path.join('..', ROARING_DIR)])
+    run_command(['cmake'] + options + [os.path.join('..', ROARING_DIR)])
     run_command(['make', '-j', '4'])
     shutil.copytree(os.path.join('..', ROARING_DIR, 'include', 'roaring'), 'roaring')
 
@@ -61,7 +61,7 @@ def compile_library_amalgamation(gcc_optimization, avx_enabled):
     run_command(['bash', os.path.join('..', ROARING_DIR, 'amalgamation.sh')])
     os.mkdir('roaring')
     shutil.copy('roaring.h', 'roaring')
-    run_command(['cc', *options, '-march=native', '-std=c11', '-shared', '-o', 'libroaring.so', '-fPIC', 'roaring.c'])
+    run_command(['cc'] + options + ['-march=native', '-std=c11', '-shared', '-o', 'libroaring.so', '-fPIC', 'roaring.c'])
 
 def compile_exec(amalgamation, gcc_optimization, avx_enabled):
     if amalgamation:
@@ -74,7 +74,7 @@ def compile_exec(amalgamation, gcc_optimization, avx_enabled):
     else:
         options.extend(['-O0'])
     shutil.copy(os.path.join('..', 'roaring_op.c'), '.')
-    run_command(['cc', *options, '-std=c11', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
+    run_command(['cc'] + options + ['-std=c11', '-Wall', '-o', 'roaring_op', 'roaring_op.c', '-lroaring', '-L', '.', '-I', '.'])
 
 def run(size1, universe1, size2, universe2, copy_on_write, run_containers):
     assert size1 in range(0, 2**32)
