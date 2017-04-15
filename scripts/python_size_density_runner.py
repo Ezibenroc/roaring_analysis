@@ -77,7 +77,8 @@ if __name__ == '__main__':
     sys.path.append('CyRoaring') # assuming the script is ran from the root directory of the repository
     from pyroaring import BitMap as PyRoaring
     from roaringbitmap import RoaringBitmap as CyRoaring
-    classes = {'set': set, 'pyroaring': PyRoaring, 'cyroaring': CyRoaring}
+    from sortedcontainers import SortedSet
+    classes = {'set': set, 'pyroaring': PyRoaring, 'cyroaring': CyRoaring, 'sortedset': SortedSet}
     op = lambda x, y: x|y
     with open(args.csv_file, 'w') as csv_file:
         csv_writer = csv.writer(csv_file)
